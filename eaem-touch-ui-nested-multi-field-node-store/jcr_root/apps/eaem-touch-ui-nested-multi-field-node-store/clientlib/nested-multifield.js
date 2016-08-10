@@ -1,59 +1,123 @@
 (function ($, $document) {
-    var DATA_EAEM_NESTED = "data-eaem-nested",
-        CFFW = ".coral-Form-fieldwrapper";
+    var EAEM_NESTED = "eaem-nested",
+        DATA_EAEM_NESTED = "data-" + EAEM_NESTED,
+        CFFW = ".coral-Form-fieldwrapper",
+        NODE_STORE = "NODE_STORE";
+
+    function isNodeStoreMultifield(type) {
+        return (type === NODE_STORE);
+    }
+
+    function isSelectOne($field) {
+        return !_.isEmpty($field) && ($field.prop("type") === "select-one");
+    }
+
+    function setSelectOne($field, value) {
+        var select = $field.closest(".coral-Select").data("select");
+
+        if (select) {
+            select.setValue(value);
+        }
+    }
 
     function isCheckbox($field) {
         return !_.isEmpty($field) && ($field.prop("type") === "checkbox");
+    }
+
+    function setCheckBox($field, value) {
+        $field.prop("checked", $field.attr("value") === value);
+    }
+
+    function isDateField($field) {
+        return !_.isEmpty($field) && ($field.prop("type") === "hidden")
+                    && $field.parent().hasClass("coral-DatePicker");
+    }
+
+    function setDateField($field, value) {
+        var date = moment(new Date(value)),
+            $parent = $field.parent();
+
+        $parent.find("input.coral-Textfield").val(date.format($parent.attr("data-displayed-format")));
+
+        $field.val(date.format($parent.attr("data-stored-format")));
+    }
+
+
+    function setWidgetValue($field, value) {
+        if (_.isEmpty($field)) {
+            return;
+        }
+
+        if(isSelectOne($field)) {
+            setSelectOne($field, value);
+        }else if(isCheckbox($field)) {
+            setCheckBox($field, value);
+        }else if(isDateField($field)) {
+            setDateField($field, value);
+        }else {
+            $field.val(value);
+        }
+    }
+
+    function getOuterMultifields(){
+        var mNames = {}, mName, $multifield, $template,
+            $multiTemplates = $(".js-coral-Multifield-input-template");
+
+        $multiTemplates.each(function (i, template) {
+            $template = $(template);
+            $multifield = $($template.html());
+
+            if(!isNodeStoreMultifield($multifield.data(EAEM_NESTED))){
+                return;
+            }
+
+            mName = $multifield.data("name").substring(2);
+
+            mNames[mName] = $template.closest(".coral-Multifield");
+        });
+
+        return mNames;
+    }
+
+    function buildOuterMultiField(data, $outerMultiField){
+        var $field;
+
+        _.each(data, function (value, key) {
+            if (key === "jcr:primaryType") {
+                return;
+            }
+
+            $outerMultiField.find(".js-coral-Multifield-add").click();
+
+            _.each(value, function (fValue, fKey) {
+                if (fKey === "jcr:primaryType") {
+                    return;
+                }
+
+                $field = $outerMultiField.find("[name='./" + fKey + "']").last();
+
+                if (_.isEmpty($field)) {
+                    return;
+                }
+
+                setWidgetValue($field, fValue);
+            });
+        })
     }
 
     function addDataInFields() {
         $document.on("dialog-ready", dlgReadyHandler);
 
         function dlgReadyHandler() {
-            var mName = $("[" + DATA_EAEM_NESTED + "]").data("name");
-
-            if(!mName){
-                return;
-            }
-
-            //strip ./
-            mName = mName.substring(2);
-
-            var $fieldSets = $("[" + DATA_EAEM_NESTED + "][class='coral-Form-fieldset']"),
-                $form = $fieldSets.closest("form.foundation-form"),
-                actionUrl = $form.attr("action") + ".json";
+            var outerMultifields = getOuterMultifields(),
+                $form = $("form.cq-dialog"),
+                actionUrl = $form.attr("action") + ".infinity.json";
 
             $.ajax(actionUrl).done(postProcess);
 
             function postProcess(data){
-                if(!data || !data[mName]){
-                    return;
-                }
-
-                var mValues = data[mName], $field, name;
-
-                if(_.isString(mValues)){
-                    mValues = [ JSON.parse(mValues) ];
-                }
-
-                _.each(mValues, function (record, i) {
-                    if (!record) {
-                        return;
-                    }
-
-                    if(_.isString(record)){
-                        record = JSON.parse(record);
-                    }
-
-                    _.each(record, function(rValue, rKey){
-                        $field = $($fieldSets[i]).find("[name='./" + rKey + "']");
-
-                        if(_.isArray(rValue) && !_.isEmpty(rValue)){
-                            fillNestedFields( $($fieldSets[i]).find("[data-init='multifield']"), rValue);
-                        }else{
-                            $field.val(rValue);
-                        }
-                    });
+                _.each(outerMultifields, function($outerMultifield, mName){
+                    buildOuterMultiField(data[mName], $outerMultifield, mName);
                 });
             }
 

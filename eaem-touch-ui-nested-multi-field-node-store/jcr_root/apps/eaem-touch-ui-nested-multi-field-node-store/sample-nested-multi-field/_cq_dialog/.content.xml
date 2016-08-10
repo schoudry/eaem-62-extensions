@@ -103,13 +103,14 @@
                                                                                     jcr:primaryType="nt:unstructured"
                                                                                     sling:resourceType="granite/ui/components/foundation/form/checkbox"
                                                                                     name="./show"
+                                                                                    value="yes"
                                                                                     text="Show?"/>
                                                                             <type
                                                                                     jcr:primaryType="nt:unstructured"
                                                                                     sling:resourceType="granite/ui/components/foundation/form/select"
                                                                                     fieldDescription="Select Size"
                                                                                     fieldLabel="Size"
-                                                                                    name="./eaemSize">
+                                                                                    name="./size">
                                                                                 <items jcr:primaryType="nt:unstructured">
                                                                                     <def
                                                                                             jcr:primaryType="nt:unstructured"
@@ -134,7 +135,7 @@
                                                                                     sling:resourceType="cq/gui/components/common/tagspicker"
                                                                                     allowCreate="{Boolean}true"
                                                                                     fieldLabel="Tags"
-                                                                                    name="./eaemTags"/>
+                                                                                    name="./tags"/>
 
                                                                         </items>
                                                                     </column>

@@ -1,6 +1,4 @@
-<%@ page import="org.apache.sling.commons.json.JSONObject" %>
 <%@ page import="java.io.PrintWriter" %>
-<%@ page import="org.apache.sling.commons.json.JSONArray" %>
 <%@ page import="org.apache.commons.lang.StringUtils" %>
 <%@include file="/libs/foundation/global.jsp" %>
 <%@page session="false" %>

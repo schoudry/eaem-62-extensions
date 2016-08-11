@@ -49,9 +49,23 @@
         return $fieldWrapper.children(".js-cq-TagsPickerField").data("property-path").substr(2);
     }
 
-    function setTagsField($fieldWrapper) {
-        var cuiPathBrowser = $fieldWrapper.find(".coral-PathBrowser").data("pathBrowser");
-        console.log(cuiPathBrowser);
+    function getTagObject(tag){
+        var tagPath = "/etc/tags/" + tag.replace(":", "/");
+        return $.get(tagPath + ".tag.json");
+    }
+
+    function setTagsField($fieldWrapper, tags) {
+        if(_.isEmpty(tags)){
+            return;
+        }
+
+        var cuiTagList = $fieldWrapper.find(".coral-TagList").data("tagList");
+
+        _.each(tags, function(tag){
+            getTagObject(tag).done(function(data){
+                cuiTagList._appendItem({ value: data.tagID, display: data.titlePath});
+            });
+        });
     }
 
     function isMultifield($formFieldWrapper){

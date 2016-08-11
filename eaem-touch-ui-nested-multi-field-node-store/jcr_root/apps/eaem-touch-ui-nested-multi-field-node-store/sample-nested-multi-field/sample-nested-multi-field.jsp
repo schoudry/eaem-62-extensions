@@ -1,6 +1,7 @@
 <%@ page import="org.apache.sling.commons.json.JSONObject" %>
 <%@ page import="java.io.PrintWriter" %>
 <%@ page import="org.apache.sling.commons.json.JSONArray" %>
+<%@ page import="org.apache.commons.lang.StringUtils" %>
 <%@include file="/libs/foundation/global.jsp" %>
 <%@page session="false" %>
 
@@ -11,53 +12,80 @@
 
 <%
         try {
-            Property property = null;
+            if (currentNode.hasNode("countries")) {
+                Node countriesNode = currentNode.getNode("countries"), cNode;
+                int counter = 1; PropertyIterator itr = null; Property property;
 
-            if (currentNode.hasProperty("countries")) {
-                property = currentNode.getProperty("countries");
-            }
+                while(true){
+                    if(!countriesNode.hasNode(String.valueOf(counter))){
+                        break;
+                    }
 
-            if (property != null) {
-                JSONObject country = null, state = null;
-                Value[] values = null;
+                    cNode = countriesNode.getNode(String.valueOf(counter));
 
-                if (property.isMultiple()) {
-                    values = property.getValues();
-                } else {
-                    values = new Value[1];
-                    values[0] = property.getValue();
-                }
+                    itr = cNode.getProperties();
 
-                for (Value val : values) {
-                    country = new JSONObject(val.getString());
+                    while(itr.hasNext()){
+                        property = itr.nextProperty();
+
+                        if(property.getName().equals("jcr:primaryType")){
+                            continue;
+                        }
 %>
-                    Country : <b><%= country.get("country") %></b>
+                        <%=property.getName()%> : <b><%=property.getString()%></b>
 <%
-                    if (country.has("states")) {
-                        JSONArray states = (JSONArray) country.get("states");
+                    }
 
-                        if (states != null) {
-                            for (int index = 0, length = states.length(); index < length; index++) {
-                                state = (JSONObject) states.get(index);
+                    if(cNode.hasNode("states")){
+                        Node statesNode = cNode.getNode("states"), sNode;
+                        int sCounter = 1; PropertyIterator sTtr = null; Property sProperty;
+
+                        while(true){
+                            if(!statesNode.hasNode(String.valueOf(sCounter))){
+                                break;
+                            }
+
+                            sNode = statesNode.getNode(String.valueOf(sCounter));
+
+                            itr = sNode.getProperties();
+
+                            while(itr.hasNext()){
+                                sProperty = itr.nextProperty();
+
+                                if(sProperty.getName().equals("jcr:primaryType")){
+                                    continue;
+                                }
+
+                                String value = null;
+
+                                if (sProperty.isMultiple()) {
+                                    Value[] values = sProperty.getValues();
+                                    value = StringUtils.join(values, ",");
+                                } else {
+                                    value = sProperty.getString();
+                                }
+
 %>
-                                <div style="padding-left: 25px">
-                                    <a href="<%= state.get("path") %>.html" target="_blank">
-                                        <%= state.get("state") %> - <%= state.get("path") %>
-                                    </a>
+                                <div style="margin-left:30px">
+                                        <%=sProperty.getName()%> : <b><%=value%></b>
                                 </div>
 <%
                             }
-                        }
 
-                    }
 %>
-                    <br><br>
+                            <br>
 <%
+
+                            sCounter = sCounter + 1;
+                        }
                 }
-            } else {
+
+                counter = counter + 1;
+        }
+    } else {
 %>
-                Add values in dialog
-                <br><br>
+    Add countries and states in dialog</b>
+<br><br>
 <%
             }
         } catch (Exception e) {

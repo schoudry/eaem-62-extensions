@@ -63,7 +63,7 @@
 
         _.each(tags, function(tag){
             getTagObject(tag).done(function(data){
-                cuiTagList._appendItem({ value: data.tagID, display: data.titlePath});
+                cuiTagList._appendItem( { value: data.tagID, display: data.titlePath} );
             });
         });
     }
@@ -134,6 +134,7 @@
                     return;
                 }else if(isTagsField($formFieldWrapper)){
                     setTagsField($formFieldWrapper, value[getTagsFieldName($formFieldWrapper)]);
+                    return;
                 }
 
                 $field = $formFieldWrapper.find("[name]");
@@ -178,7 +179,6 @@
             return;
         }
 
-        //strip ./
         if (name.indexOf("./") === 0) {
             name = name.substring(2);
         }
@@ -206,7 +206,6 @@
             return;
         }
 
-        //strip ./
         nName = outerMultiName + "/" + nName.substring(2);
 
         $fieldSets.each(function (iCounter, fieldSet) {
@@ -218,7 +217,6 @@
         });
     }
 
-    //collect data from widgets in multifield and POST them to CRX as JSON
     function collectDataFromFields(){
         $document.on("click", ".cq-dialog-submit", collectHandler);
 

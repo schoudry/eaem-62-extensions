@@ -16,7 +16,7 @@
             <clientlibs
                 jcr:primaryType="nt:unstructured"
                 sling:resourceType="granite/ui/components/coral/foundation/includeclientlibs"
-                categories="[coralui3,granite.ui.coral.foundation]"/>
+                categories="[coralui3,granite.ui.coral.foundation,eaem.wizard]"/>
         </head>
         <body
             jcr:primaryType="nt:unstructured"
@@ -35,6 +35,7 @@
                         jcr:primaryType="nt:unstructured"
                         jcr:title="Success"
                         sling:resourceType="granite/ui/components/coral/foundation/form/responses/openprompt"
+                        open="/apps/eaem-sample-wizard/eaem-3-step-wizard.html"
                         redirect="/apps/eaem-sample-wizard/eaem-3-step-wizard.html"
                         text="Your data was submitted"/>
                     <items jcr:primaryType="nt:unstructured">
@@ -65,11 +66,12 @@
                                                     jcr:primaryType="nt:unstructured"
                                                     sling:resourceType="granite/ui/components/foundation/container">
                                                     <items jcr:primaryType="nt:unstructured">
-                                                        <title
+                                                        <assetsPath
                                                             jcr:primaryType="nt:unstructured"
-                                                            sling:resourceType="granite/ui/components/coral/foundation/form/textfield"
-                                                            fieldLabel="Title"
-                                                            name="eaemTitle"/>
+                                                            sling:resourceType="granite/ui/components/foundation/form/pathbrowser"
+                                                            fieldLabel="Assets Path"
+                                                            name="eaemAssetsPath"
+                                                            rootPath="/content/dam"/>
                                                     </items>
                                                 </column>
                                             </items>
@@ -93,27 +95,10 @@
                                     jcr:title="Step Two"
                                     sling:resourceType="granite/ui/components/coral/foundation/container">
                                     <items jcr:primaryType="nt:unstructured">
-                                        <description
+                                        <list
                                             jcr:primaryType="nt:unstructured"
-                                            sling:resourceType="granite/ui/components/foundation/section">
-                                            <layout
-                                                jcr:primaryType="nt:unstructured"
-                                                sling:resourceType="granite/ui/components/foundation/layouts/fixedcolumns"
-                                                margin="{Boolean}false"/>
-                                            <items jcr:primaryType="nt:unstructured">
-                                                <column
-                                                    jcr:primaryType="nt:unstructured"
-                                                    sling:resourceType="granite/ui/components/foundation/container">
-                                                    <items jcr:primaryType="nt:unstructured">
-                                                        <description
-                                                            jcr:primaryType="nt:unstructured"
-                                                            sling:resourceType="granite/ui/components/coral/foundation/form/textarea"
-                                                            fieldLabel="Description"
-                                                            name="eaemDescription"/>
-                                                    </items>
-                                                </column>
-                                            </items>
-                                        </description>
+                                            sling:resourceType="granite/ui/components/coral/foundation/include"
+                                            path="/libs/dam/gui/content/assets/jcr:content/views/list"/>
                                     </items>
                                     <parentConfig jcr:primaryType="nt:unstructured">
                                         <next
@@ -145,11 +130,11 @@
                                                     jcr:primaryType="nt:unstructured"
                                                     sling:resourceType="granite/ui/components/foundation/container">
                                                     <items jcr:primaryType="nt:unstructured">
-                                                        <footer
+                                                        <text
                                                             jcr:primaryType="nt:unstructured"
                                                             sling:resourceType="granite/ui/components/coral/foundation/form/textfield"
-                                                            fieldLabel="Footer"
-                                                            name="eaemFooter"/>
+                                                            fieldLabel="Text"
+                                                            name="eaemText"/>
                                                     </items>
                                                 </column>
                                             </items>

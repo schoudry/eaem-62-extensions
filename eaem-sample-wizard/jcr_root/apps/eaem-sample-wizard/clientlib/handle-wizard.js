@@ -6,7 +6,7 @@
 
     $document.on("foundation-contentloaded", moveToStep2IfSuffixAvailable);
 
-    $(document).on("foundation-wizard-stepchange", handleSteps);
+    $document.on("foundation-wizard-stepchange", handleSteps);
 
     function moveToStep2IfSuffixAvailable(){
         var $wizard = $(".foundation-wizard");

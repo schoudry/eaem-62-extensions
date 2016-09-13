@@ -1,20 +1,12 @@
 <%@include file="/libs/granite/ui/global.jsp"%>
-<%@page session="false"
-          import="com.day.cq.commons.servlets.HtmlStatusResponseHelper,
-                  org.apache.sling.api.servlets.HtmlResponse"%>
+<%@page session="false"%>
+
 <%
-    HtmlResponse htmlResponse = null;
+    String eaemSelectedAssets = request.getParameter("eaemSelectedAssets");
+    String eaemText = request.getParameter("eaemText");
 
-    try {
-        String eaemTitle = request.getParameter("eaemTitle");
+    //PROCESS THE SELECTED ASSETS
 
-        System.out.println("--------------" + eaemTitle);
-
-        htmlResponse = HtmlStatusResponseHelper.createStatusResponse(true, eaemTitle, "/projects.html");
-
-    } catch (Exception e) {
-        htmlResponse = HtmlStatusResponseHelper.createStatusResponse(false, "Error handling wizard data - " + e.getMessage(), null);
-    }
-
-    htmlResponse.send(response, true);
+    log.info("eaemText-------" + eaemText);
+    log.info("eaemSelectedAssets-------" + eaemSelectedAssets);
 %>

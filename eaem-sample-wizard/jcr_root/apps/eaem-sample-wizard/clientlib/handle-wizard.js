@@ -49,6 +49,7 @@
         var $eaemAssetsPath = $("[name=" + EAEM_ASSETS_PATH + "]");
 
         if(isSecondStep() && !_.isEmpty($eaemAssetsPath.val())){
+            $(nextStep).hide();
             redirectTo(WIZARD_URL + $eaemAssetsPath.val());
         }else if(isThirdStep()){
             addSelectedAssetsToForm();
@@ -73,21 +74,10 @@
     }
 
     function redirectTo(url){
-        showMessageBox("Loading...", "Redirect");
+        var ui = $(window).adaptTo("foundation-ui");
+
+        ui.wait($("form"));
 
         window.location = url;
-    }
-
-    function showMessageBox(message, title){
-        var fui = $(window).adaptTo("foundation-ui"),
-            options = [{
-                text: "OK",
-                primary: true
-            }];
-
-        message = message || "Ok";
-        title = title || "Ok";
-
-        fui.prompt(title, message, "success", options);
     }
 }(jQuery, jQuery(document)));

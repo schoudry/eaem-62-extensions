@@ -7,9 +7,9 @@
 
     function addValidator($multifield){
         var $rteContainer = $multifield.find("." + RTE_CONTAINER).last(),
-            requiredFields = $rteContainer.find("[aria-required='true']");
+            requiredField = $rteContainer.find("[aria-required='true']");
 
-        if(_.isEmpty(requiredFields)){
+        if(_.isEmpty(requiredField)){
             return;
         }
 

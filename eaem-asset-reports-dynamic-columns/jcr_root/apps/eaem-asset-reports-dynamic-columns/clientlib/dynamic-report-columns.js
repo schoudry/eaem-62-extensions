@@ -2,14 +2,28 @@
     var VIEW_SETTINGS_COLUMN_CONFIG = {},
         FOUNDATION_CONTENT_LOADED = "foundation-contentloaded",
         REPORTS_FORM = "#customcolumnsForm",
+        DAM_ADMIN_REPORTS_PAGE = ".cq-damadmin-admin-reportspage",
         METADATA_COL_MAPPING = "data-eaem-col-mapping",
         METADATA_COL_TITLE = "data-eaem-col-title",
+        QB = "/bin/querybuilder.json?",
+        REPORT_RESULT_URL = "/mnt/overlay/dam/gui/content/reports/reportsresult.html",
         EAEM_COL = "eaemCol",
         FORM_FIELD_WRAPPER = ".coral-Form-fieldwrapper",
         COOKIE_REPORT_LIST_VIEW_COLUMNS = "eaem.report.listview.columns",
         REPORTS_CONFIGURE_COLUMNS_DIALOG = "reports-configure-columns-dialog",
-        COLUMNS_IN_URL = "/apps/eaem-asset-reports-dynamic-columns/dialog/modal.html",
-        DYNAMIC_COLS_CONFIG_URL = "/etc/experience-aem/report-columns/jcr:content/list.infinity.json";
+        COLUMN_URL = "/apps/eaem-asset-reports-dynamic-columns/dialog/column.html",
+        COLUMNS_MODAL = "/apps/eaem-asset-reports-dynamic-columns/dialog/modal.html",
+        DYNAMIC_COLS_CONFIG_URL = "/etc/experience-aem/report-columns/jcr:content/list.infinity.json",
+        MAIN_COLUMN = "dam/gui/coral/components/admin/reports/columns/main",
+        MAIN_COLUMN_WIDTH = 22,
+        COLUMN_CACHE = [],
+        COLUMN_WIDTH = "0%";
+
+    if (typeof EAEM == "undefined") {
+        EAEM = { REPORT : {} };
+    }
+
+    EAEM.REPORT.storeEnabledColumns = storeEnabledColumns;
 
     loadColumnsConfiguration();
 
@@ -44,7 +58,146 @@
 
         if(isConfigureColumnsDialog(target)){
             addDynamicColumnsInModal();
+        }else if(isReportsPage(event)){
+            handleReportsPage();
         }
+    }
+
+    function handleReportsPage(){
+        var $reportsPage = $(DAM_ADMIN_REPORTS_PAGE);
+
+        if(_.isEmpty($reportsPage)){
+            return;
+        }
+
+        var enabledColumns = getEnabledColumnsObj()[getReportPath()];
+
+        if(_.isEmpty(enabledColumns)){
+            return;
+        }
+
+        $.get(getSearchUrl()).done(handleHeaders);
+    }
+
+    function handleHeaders(data){
+        var $reportsPage = $(DAM_ADMIN_REPORTS_PAGE),
+            $hContainers = $reportsPage.find("header > .label"),
+            $aContainers = $reportsPage.find("article");
+
+        if(customHeadersAdded($hContainers)){
+            //handlePagination($aContainers);
+            return;
+        }
+
+        var enabledColumns = getEnabledColumnsObj()[getReportPath()];
+
+        $.ajax(COLUMN_URL).done(function(colHtml) {
+            _.each(enabledColumns, function(colMetaPath){
+                addColumnHeaders($hContainers, $aContainers, colHtml, colMetaPath);
+
+                addCellValues($aContainers, data.hits);
+            });
+        });
+    }
+
+    function addColumnHeaders($hContainers, $aContainers, colHtml, colMetaPath){
+        var $columnHeader, $labelContainers = $aContainers.find(".label"),
+            cellHtml;
+
+        $columnHeader = $(colHtml).appendTo($hContainers);
+
+        $columnHeader.attr(METADATA_COL_MAPPING, colMetaPath)
+                        .html(VIEW_SETTINGS_COLUMN_CONFIG[colMetaPath]);
+
+        COLUMN_WIDTH = fixHeaderWidths($hContainers);
+
+        if(_.isEmpty($labelContainers)){
+            return;
+        }
+
+        cellHtml = getCellHtml(colMetaPath, "");
+
+        $labelContainers.append(cellHtml);
+
+        fixCellWidths($labelContainers, COLUMN_WIDTH);
+
+        COLUMN_CACHE.push(cellHtml);
+    }
+
+    function addCellValues($aContainers, hits){
+        var $aParent = $aContainers.parent();
+
+        if(_.isEmpty(hits)){
+            return;
+        }
+
+        var $article, $cell, enabledColumns = getEnabledColumnsObj();
+
+        _.each(hits, function(hit){
+            $article = $aParent.find("article[data-path='" + hit["jcr:path"] + "']");
+
+            if(_.isEmpty($article)){
+                return;
+            }
+
+            _.each(enabledColumns, function(colMetaPath){
+                $cell = $article.find("[" + METADATA_COL_MAPPING + "='" + colMetaPath + "']");
+
+                $cell.html(nestedPluck(hit, colMetaPath));
+            })
+        })
+    }
+
+    function fixCellWidths($lContainers, colWidth){
+        $lContainers.children("div").removeClass("small-col large-col")
+            .css("width", MAIN_COLUMN_WIDTH + "%");
+
+        $lContainers.children("p").removeClass("small-col large-col")
+            .css("width", colWidth).css("float", "left");
+    }
+
+    function getCellHtml(colMapping, colText){
+        return "<p "
+            + METADATA_COL_MAPPING + "='" + colMapping + "'>"
+                + colText +
+            "</p>";
+    }
+
+    function fixHeaderWidths($hContainer){
+        var $hDivs = $hContainer.children("div"), $hDiv,
+            colWidth = ((100 - MAIN_COLUMN_WIDTH) / ($hDivs.length - 1)) + "%";
+
+        $hDivs.each(function(index, hDiv){
+            $hDiv = $(hDiv);
+
+            $hDiv.removeClass("small-col large-col");
+
+            if( $hDiv.data("itemresourcetype") === MAIN_COLUMN){
+                $hDiv.css("width", MAIN_COLUMN_WIDTH + "%");
+                return;
+            }
+
+            $hDiv.css("width", colWidth);
+        });
+
+        return colWidth;
+    }
+
+    function customHeadersAdded($hContainers){
+        return !_.isEmpty($hContainers.find("[" + METADATA_COL_MAPPING + "]"));
+    }
+
+    function isReportsPage(event){
+        var target = event.target;
+
+        if(!target){
+            return false;
+        }
+
+        var $target = (!target.$ ? $(target) : target.$);
+
+        return (!_.isEmpty($target.find(DAM_ADMIN_REPORTS_PAGE))
+                    || $target.hasClass(DAM_ADMIN_REPORTS_PAGE.substr(1)));
     }
 
     function isConfigureColumnsDialog(target){
@@ -58,7 +211,7 @@
     }
 
     function addDynamicColumnsInModal(){
-        var url = COLUMNS_IN_URL + getReportPath();
+        var url = COLUMNS_MODAL + getReportPath();
 
         $.ajax(url).done(handler);
 
@@ -74,7 +227,8 @@
                 $html = $(html);
 
                 $input = $html.find("input[title='" + EAEM_COL + "']")
-                    .attr(METADATA_COL_MAPPING, colPath);
+                            .attr(METADATA_COL_MAPPING, colPath)
+                            .val("");
 
                 if(contains(enabledColumns, colPath)){
                     $input.attr("checked", "checked");
@@ -179,5 +333,39 @@
         var $form = $(REPORTS_FORM);
 
         $form.css("max-height", "21.5rem").css("overflow-y", "auto");
+    }
+
+    function getSearchUrl(){
+        var $form = $("form[action='" + REPORT_RESULT_URL + getReportPath() + "']");
+        return QB + $form.serialize() + "&p.nodedepth=2&p.hits=full";
+    }
+
+    function nestedPluck(object, key) {
+        if (!_.isObject(object) || _.isEmpty(object) || _.isEmpty(key)) {
+            return [];
+        }
+
+        if (key.indexOf("/") === -1) {
+            return object[key];
+        }
+
+        var nestedKeys = _.reject(key.split("/"), function(token) {
+            return token.trim() === "";
+        }), nestedObjectOrValue = object;
+
+        _.each(nestedKeys, function(nKey) {
+            if(_.isUndefined(nestedObjectOrValue)){
+                return;
+            }
+
+            if(_.isUndefined(nestedObjectOrValue[nKey])){
+                nestedObjectOrValue = undefined;
+                return;
+            }
+
+            nestedObjectOrValue = nestedObjectOrValue[nKey];
+        });
+
+        return nestedObjectOrValue;
     }
 })(jQuery, jQuery(document));

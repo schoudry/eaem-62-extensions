@@ -17,7 +17,8 @@
         MAIN_COLUMN = "dam/gui/coral/components/admin/reports/columns/main",
         MAIN_COLUMN_WIDTH = 22,
         COLUMN_CACHE = [],
-        COLUMN_WIDTH = "0%";
+        COLUMN_WIDTH = "0%",
+        searchUrl;
 
     if (typeof EAEM == "undefined") {
         EAEM = { REPORT : {} };
@@ -34,7 +35,7 @@
     });
 
     $document.on("submit", "form.foundation-form", function(e) {
-        $.get(getSearchUrl()).done(addCellValues);
+        searchUrl = getSearchUrl();
     });
 
     function loadColumnsConfiguration() {
@@ -99,6 +100,12 @@
             _.each(enabledColumns, function(colMetaPath){
                 addColumnHeaders($hContainers, $aContainers, colHtml, colMetaPath);
             });
+
+            if(!searchUrl){
+                return;
+            }
+
+            $.get(searchUrl).done(addCellValues);
         });
     }
 
@@ -135,7 +142,7 @@
             $aContainers = $reportsPage.find("article"),
             $aParent = $aContainers.parent();
 
-        var $article, $cell, enabledColumns = getEnabledColumnsObj();
+        var $article, $cell, enabledColumns = getEnabledColumnsObj()[getReportPath()];
 
         _.each(hits, function(hit){
             $article = $aParent.find("article[data-path='" + hit["jcr:path"] + "']");

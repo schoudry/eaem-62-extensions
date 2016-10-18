@@ -16,9 +16,7 @@
         DYNAMIC_COLS_CONFIG_URL = "/etc/experience-aem/report-columns/jcr:content/list.infinity.json",
         MAIN_COLUMN = "dam/gui/coral/components/admin/reports/columns/main",
         MAIN_COLUMN_WIDTH = 22,
-        COLUMN_CACHE = [],
-        COLUMN_WIDTH = "0%",
-        searchUrl;
+        COLUMN_CACHE = [], COLUMN_WIDTH = "0%", CELL_DATA = [], searchUrl;
 
     if (typeof EAEM == "undefined") {
         EAEM = { REPORT : {} };
@@ -105,7 +103,15 @@
                 return;
             }
 
-            $.get(searchUrl).done(addCellValues);
+            $.get(searchUrl).done(function(data){
+                if(_.isEmpty(data.hits)){
+                    return;
+                }
+
+                CELL_DATA = data.hits;
+
+                addCellValues();
+            });
         });
     }
 
@@ -126,6 +132,8 @@
         });
 
         fixCellWidths($labelContainers, COLUMN_WIDTH);
+
+        addCellValues();
     }
 
     function addColumnHeaders($hContainers, $aContainers, colHtml, colMetaPath){
@@ -152,18 +160,14 @@
         COLUMN_CACHE.push(cellHtml);
     }
 
-    function addCellValues( data){
-        if(_.isEmpty(data.hits)){
-            return;
-        }
-
-        var hits = data.hits,  $reportsPage = $(DAM_ADMIN_REPORTS_PAGE),
+    function addCellValues( ){
+        var $reportsPage = $(DAM_ADMIN_REPORTS_PAGE),
             $aContainers = $reportsPage.find("article"),
-            $aParent = $aContainers.parent();
+            $aParent = $aContainers.parent(),
+            $article, $cell,
+            enabledColumns = getEnabledColumnsObj()[getReportPath()];
 
-        var $article, $cell, enabledColumns = getEnabledColumnsObj()[getReportPath()];
-
-        _.each(hits, function(hit){
+        _.each(CELL_DATA, function(hit){
             $article = $aParent.find("article[data-path='" + hit["jcr:path"] + "']");
 
             if(_.isEmpty($article)){
@@ -172,7 +176,6 @@
 
             _.each(enabledColumns, function(colMetaPath){
                 $cell = $article.find("[" + METADATA_COL_MAPPING + "='" + colMetaPath + "']");
-
                 $cell.html(nestedPluck(hit, colMetaPath));
             })
         })

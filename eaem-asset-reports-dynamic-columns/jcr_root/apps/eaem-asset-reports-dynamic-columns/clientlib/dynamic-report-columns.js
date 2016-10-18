@@ -11,7 +11,7 @@
         FORM_FIELD_WRAPPER = ".coral-Form-fieldwrapper",
         COOKIE_REPORT_LIST_VIEW_COLUMNS = "eaem.report.listview.columns",
         REPORTS_CONFIGURE_COLUMNS_DIALOG = "reports-configure-columns-dialog",
-        COLUMN_URL = "/apps/eaem-asset-reports-dynamic-columns/dialog/column.html",
+        COLUMN_URL = "/apps/eaem-asset-reports-dynamic-columns/dialog/columns/column.html",
         COLUMNS_MODAL = "/apps/eaem-asset-reports-dynamic-columns/dialog/modal.html",
         DYNAMIC_COLS_CONFIG_URL = "/etc/experience-aem/report-columns/jcr:content/list.infinity.json",
         MAIN_COLUMN = "dam/gui/coral/components/admin/reports/columns/main",
@@ -31,6 +31,10 @@
         _.defer(function(){
             handleContentLoad(event);
         });
+    });
+
+    $document.on("submit", "form.foundation-form", function(e) {
+        $.get(getSearchUrl()).done(addCellValues);
     });
 
     function loadColumnsConfiguration() {
@@ -76,10 +80,10 @@
             return;
         }
 
-        $.get(getSearchUrl()).done(handleHeaders);
+        handleHeaders();
     }
 
-    function handleHeaders(data){
+    function handleHeaders(){
         var $reportsPage = $(DAM_ADMIN_REPORTS_PAGE),
             $hContainers = $reportsPage.find("header > .label"),
             $aContainers = $reportsPage.find("article");
@@ -94,8 +98,6 @@
         $.ajax(COLUMN_URL).done(function(colHtml) {
             _.each(enabledColumns, function(colMetaPath){
                 addColumnHeaders($hContainers, $aContainers, colHtml, colMetaPath);
-
-                addCellValues($aContainers, data.hits);
             });
         });
     }
@@ -124,12 +126,14 @@
         COLUMN_CACHE.push(cellHtml);
     }
 
-    function addCellValues($aContainers, hits){
-        var $aParent = $aContainers.parent();
-
-        if(_.isEmpty(hits)){
+    function addCellValues( data){
+        if(_.isEmpty(data.hits)){
             return;
         }
+
+        var hits = data.hits,  $reportsPage = $(DAM_ADMIN_REPORTS_PAGE),
+            $aContainers = $reportsPage.find("article"),
+            $aParent = $aContainers.parent();
 
         var $article, $cell, enabledColumns = getEnabledColumnsObj();
 

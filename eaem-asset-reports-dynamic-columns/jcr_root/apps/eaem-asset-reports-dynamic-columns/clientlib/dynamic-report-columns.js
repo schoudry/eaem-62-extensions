@@ -90,7 +90,7 @@
             $aContainers = $reportsPage.find("article");
 
         if(customHeadersAdded($hContainers)){
-            //handlePagination($aContainers);
+            handlePagination($aContainers);
             return;
         }
 
@@ -107,6 +107,25 @@
 
             $.get(searchUrl).done(addCellValues);
         });
+    }
+
+    function handlePagination($aContainers){
+        var $labelContainers = $aContainers.find(".label"),
+            $lContainer;
+
+        $labelContainers.each(function(index, aContainer){
+            $lContainer = $(aContainer);
+
+            if(customHeadersAdded($lContainer)){
+                return;
+            }
+
+            _.each(COLUMN_CACHE, function(cellHtml){
+                $lContainer.append(cellHtml);
+            })
+        });
+
+        fixCellWidths($labelContainers, COLUMN_WIDTH);
     }
 
     function addColumnHeaders($hContainers, $aContainers, colHtml, colMetaPath){

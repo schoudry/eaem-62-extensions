@@ -4,8 +4,9 @@
         REPORTS_FORM = "#customcolumnsForm",
         DAM_ADMIN_REPORTS_PAGE = ".cq-damadmin-admin-reportspage",
         METADATA_COL_MAPPING = "data-eaem-col-mapping",
-        METADATA_COL_TITLE = "data-eaem-col-title",
+        EXPORT_BUTTON = ".dam-admin-reports-export",
         QB = "/bin/querybuilder.json?",
+        EXPORT_URL = "/apps/eaem-asset-reports-dynamic-columns/dialog/export.html",
         REPORT_RESULT_URL = "/mnt/overlay/dam/gui/content/reports/reportsresult.html",
         EAEM_COL = "eaemCol",
         FORM_FIELD_WRAPPER = ".coral-Form-fieldwrapper",
@@ -91,6 +92,8 @@
             handlePagination($aContainers);
             return;
         }
+
+        handleExport();
 
         var enabledColumns = getEnabledColumnsObj()[getReportPath()];
 
@@ -277,6 +280,56 @@
             });
 
             styleDialog();
+        }
+    }
+
+    function handleExport(){
+        $document.off("click", EXPORT_BUTTON).fipo("tap", "click", EXPORT_BUTTON, handler);
+
+        function handler(){
+            var currReportPath = getReportPath();
+
+            if(currReportPath.indexOf("default") !== -1) {
+                return;
+            }
+
+            var $form = $(".dam-admin-reports").find("[report-path='" + currReportPath + "']").find('form'),
+                $sliderrange = $form.find(".sliderrange");
+
+            setSliderValue($sliderrange);
+
+            var url = Granite.HTTP.externalize(EXPORT_URL + currReportPath + "?" + $form.serialize());
+
+            var downloadURL = function (url) {
+                $('<iframe>', {
+                    id: 'idown',
+                    src: url
+                }).hide().appendTo('body');
+            };
+
+            downloadURL(url);
+        }
+
+        function setSliderValue($form){
+            var tickValues = $form.find(".coral-Slider").attr("data-tickvalues").split(","),
+                lowerInd = $form.find(".coral-Slider.lower").attr('value'),
+                upperInd = $form.find(".coral-Slider.upper").attr('value'),
+                order = $form.find(".coral-Slider").attr("data-order"), tmp;
+
+            if (order && order === "increasing") {
+                if (lowerInd > upperInd) {
+                    tmp = lowerInd;
+                    lowerInd = upperInd;
+                    upperInd = tmp;
+                }
+            } else if (lowerInd < upperInd) {
+                tmp = lowerInd;
+                lowerInd = upperInd;
+                upperInd = tmp;
+            }
+
+            $form.find(".coral-Slider.lower .lowervalue").val(tickValues[lowerInd]);
+            $form.find(".coral-Slider.upper .uppervalue").val(tickValues[upperInd]);
         }
     }
 

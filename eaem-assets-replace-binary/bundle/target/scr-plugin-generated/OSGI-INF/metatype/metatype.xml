@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?><metatype:MetaData xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.0.0" localization="OSGI-INF/metatype/metatype">
+    <OCD id="apps.experienceaem.assets.ReplaceBinary" name="Experience AEM Replace Binary Servlet" description="%apps.experienceaem.assets.ReplaceBinary.description"/>
+    <Designate pid="apps.experienceaem.assets.ReplaceBinary">
+        <Object ocdref="apps.experienceaem.assets.ReplaceBinary"/>
+    </Designate>
+</metatype:MetaData>

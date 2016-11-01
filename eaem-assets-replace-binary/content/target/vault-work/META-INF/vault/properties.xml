@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>Assets Replace Binary Package</comment>
+<entry key="createdBy">nalabotu</entry>
+<entry key="name">binary-replace-content</entry>
+<entry key="created">2016-11-01T12:29:16.131-0500</entry>
+<entry key="groupId">apps.experienceaem.assets</entry>
+<entry key="version">1.0-SNAPSHOT</entry>
+<entry key="requiresRoot">false</entry>
+<entry key="group">Experience AEM</entry>
+<entry key="description">Maven Multimodule project for Assets Replace Binary.</entry>
+<entry key="artifactId">binary-replace-content</entry>
+<entry key="path">/etc/packages/Experience AEM/binary-replace-content.zip</entry>
+</properties>

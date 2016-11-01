@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?><components xmlns:scr="http://www.osgi.org/xmlns/scr/v1.0.0">
+    <scr:component enabled="true" name="apps.experienceaem.assets.ReplaceBinary">
+        <implementation class="apps.experienceaem.assets.ReplaceBinary"/>
+        <service servicefactory="false">
+            <provide interface="javax.servlet.Servlet"/>
+            <provide interface="javax.servlet.ServletConfig"/>
+            <provide interface="java.io.Serializable"/>
+        </service>
+        <property name="sling.servlet.methods" type="String" value="POST"/>
+        <property name="sling.servlet.paths" type="String" value="/bin/eaem/replace-binary"/>
+        <property name="service.pid" value="apps.experienceaem.assets.ReplaceBinary"/>
+    </scr:component>
+</components>

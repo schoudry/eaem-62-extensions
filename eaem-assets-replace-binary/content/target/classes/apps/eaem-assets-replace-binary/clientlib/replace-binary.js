@@ -12,7 +12,7 @@
         REPLACE_WITH_ASSET_PATH = "replaceWithAssetPath",
         TO_BE_REPLACED_ASSET_PATH = "toBeReplacedAssetPath",
         fui = $(window).adaptTo("foundation-ui"),
-        SUBMIT_URL = "",
+        SUBMIT_URL = "/bin/eaem/replace-binary",
         SELECT_ASSET_URL = "/apps/eaem-assets-replace-binary/wizard/select-assets.html",
         REPLACE_PULL_DOWN_URL = "/apps/eaem-assets-replace-binary/button/replace-binary.html";
 

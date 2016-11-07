@@ -4,6 +4,8 @@
         FOUNDATION_SELECTIONS_CHANGE = "foundation-selections-change",
         FOUNDATION_WIZARD_STEPCHANGE = "foundation-wizard-stepchange",
         EDIT_ACTIVATOR = "aem-assets-admin-actions-edit-activator",
+        REPLACE_WITH_LOCAL_FILE = ".replace-with-local-file",
+        REPLACE_WITH_LOCAL_FILE_UPLOAD = "#replace-with-local-fileupload",
         REPLACE_WITH_AEM_FILE = ".replace-with-aem-file",
         EAEM_BINARY_REPLACE = "#eaem-binary-replace",
         DAM_ADMIN_CHILD_PAGES = ".cq-damadmin-admin-childpages",
@@ -14,7 +16,8 @@
         fui = $(window).adaptTo("foundation-ui"),
         SUBMIT_URL = "/bin/eaem/replace-binary?",
         SELECT_ASSET_URL = "/apps/eaem-assets-replace-binary/wizard/select-assets.html",
-        REPLACE_PULL_DOWN_URL = "/apps/eaem-assets-replace-binary/button/replace-binary.html";
+        REPLACE_PULL_DOWN_URL = "/apps/eaem-assets-replace-binary/button/replace-binary.html",
+        FILE_UPLOAD_BUT_URL = "/apps/eaem-assets-replace-binary/button/replace-with-local-fileupload.html";
 
     var pathName = window.location.pathname;
 
@@ -193,10 +196,18 @@
                 return;
             }
 
-            $.ajax(REPLACE_PULL_DOWN_URL).done(addButton);
+            $.ajax(REPLACE_PULL_DOWN_URL).done(addPullDown);
+
+            $.ajax(FILE_UPLOAD_BUT_URL).done(addFileUpload);
         });
 
-        function addButton(html){
+        function addFileUpload(html){
+            var $abContainer = $("coral-actionbar-container:first");
+
+            $(html).appendTo($abContainer).attr("hidden", "hidden");
+        }
+
+        function addPullDown(html){
             var $eActivator = $("." + EDIT_ACTIVATOR);
 
             if ($eActivator.length == 0) {
@@ -205,7 +216,18 @@
 
             $(html).insertBefore( $eActivator );
 
+            handleReplaceWithLocalFile();
+
             handleReplaceWithAEMFile();
+        }
+
+        function handleReplaceWithLocalFile(){
+            var $replaceWithLocalFile = $(REPLACE_WITH_LOCAL_FILE);
+
+            $replaceWithLocalFile.click(function(){
+                //upload not added in pulldown to workaround IE11/firefox issue
+                $(REPLACE_WITH_LOCAL_FILE_UPLOAD).find("button").click();
+            });
         }
 
         function handleReplaceWithAEMFile(){

@@ -13,6 +13,7 @@
         PLACEHOLDER_SRC = "PLACEHOLDER_SRC",
         REPLACE_WITH_ASSET_PATH = "replaceWithAssetPath",
         TO_BE_REPLACED_ASSET_PATH = "toBeReplacedAssetPath",
+        DELETE_SOURCE = "deleteSource",
         fui = $(window).adaptTo("foundation-ui"),
         SUBMIT_URL = "/bin/eaem/replace-binary?",
         SELECT_ASSET_URL = "/apps/eaem-assets-replace-binary/wizard/select-assets.html",
@@ -87,7 +88,7 @@
                 var dest = getStringAfterLastSlash(replaceWithAssetPath),
                     src = getStringAfterLastSlash(toBeReplacedAssetPath);
 
-                showAlert("File '" + src + "' replaced with '" + dest + "'", 'Replaced', callback);
+                showAlert("File '" + src + "' replaced with '" + dest + "' binary", 'Replaced', callback);
             });
 
             function callback(){
@@ -111,11 +112,9 @@
                 return;
             }
 
-            replaceWithAssetPath = "";
+            replaceWithAssetPath = getToBeReplacedPaths();
 
-            $(".foundation-selections-item").each(function(index, asset){
-                replaceWithAssetPath = $(asset).data("foundation-collection-item-id");
-            });
+            replaceWithAssetPath = _.isEmpty(replaceWithAssetPath) ? "" : replaceWithAssetPath[0];
 
             if(_.isEmpty(replaceWithAssetPath) || _.isEmpty(toBeReplacedAssetPath)){
                 return;
@@ -192,7 +191,6 @@
             var $replaceButton = $(EAEM_BINARY_REPLACE);
 
             if(!_.isEmpty($replaceButton)){
-                handleReplaceWithAEMFile();
                 return;
             }
 
@@ -202,9 +200,58 @@
         });
 
         function addFileUpload(html){
-            var $abContainer = $("coral-actionbar-container:first");
+            var $abContainer = $("coral-actionbar-container:first"),
+                $childPage = $(DAM_ADMIN_CHILD_PAGES),
+                folderPath = $childPage.data("foundation-collection-id");
 
-            $(html).appendTo($abContainer).attr("hidden", "hidden");
+            var $fileUpload = $(html).appendTo($abContainer).attr("hidden", "hidden");
+
+            $fileUpload.off('coral-fileupload:fileadded')
+                       .on('coral-fileupload:fileadded', uploadHandler)
+                       .off('coral-fileupload:loadend')
+                       .on('coral-fileupload:loadend', fileUploaded);
+
+            function fileUploaded(){
+                var replaceWithAssetPath = folderPath + "/" + getStringAfterLastSlash(this.value),
+                    toBeReplacedAssetPath = getToBeReplacedPaths()[0];
+
+                var url = SUBMIT_URL + REPLACE_WITH_ASSET_PATH + "="
+                            + replaceWithAssetPath + "&"
+                            + TO_BE_REPLACED_ASSET_PATH + "=" + toBeReplacedAssetPath + "&"
+                            + DELETE_SOURCE + "=true";
+
+                fui.wait();
+
+                $.ajax({url : url, type: "POST"}).done(function(){
+                    fui.clearWait();
+
+                    var dest = getStringAfterLastSlash(replaceWithAssetPath),
+                        src = getStringAfterLastSlash(toBeReplacedAssetPath);
+
+                    showAlert("File '" + src + "' replaced with '" + dest + "' binary", 'Replaced', function(){
+                        window.location.reload();
+                    });
+                });
+            }
+
+            function uploadHandler(){
+                var toBeReplacedAssetPath = getToBeReplacedPaths()[0],
+                    replaceWithAssetPath = this.value,
+                    destExtn = getStringAfterLastDot(toBeReplacedAssetPath),
+                    srcExtn = getStringAfterLastDot(replaceWithAssetPath);
+
+                if (destExtn !== srcExtn) {
+                    var dest = decodeURIComponent(getStringAfterLastSlash(toBeReplacedAssetPath)),
+                        src = decodeURIComponent(getStringAfterLastSlash(replaceWithAssetPath));
+
+                    showAlert("'" + dest + "' and '" + src + "' donot have the same extension", 'Error');
+
+                    return;
+                }
+
+                this.action = folderPath + ".createasset.html";
+                this.upload();
+            }
         }
 
         function addPullDown(html){
@@ -224,7 +271,16 @@
         function handleReplaceWithLocalFile(){
             var $replaceWithLocalFile = $(REPLACE_WITH_LOCAL_FILE);
 
-            $replaceWithLocalFile.click(function(){
+            $replaceWithLocalFile.click(function(event){
+                event.preventDefault();
+
+                var toBeReplacedAssetPath = getToBeReplacedPaths();
+
+                if(toBeReplacedAssetPath.length > 1){
+                    showAlert("Select one asset...", "Error");
+                    return;
+                }
+
                 //upload not added in pulldown to workaround IE11/firefox issue
                 $(REPLACE_WITH_LOCAL_FILE_UPLOAD).find("button").click();
             });
@@ -241,15 +297,18 @@
 
             folderPath = $childPage.data("foundation-collection-id");
 
-            var toBeReplacedAssetPath;
+            $replaceAEMFile.click(function(event){
+                event.preventDefault();
 
-            $(".foundation-selections-item").each(function(index, asset){
-                toBeReplacedAssetPath = $(asset).data("foundation-collection-item-id");
-            });
+                var toBeReplacedAssetPath = getToBeReplacedPaths();
 
-            replaceDialog = getReplaceAEMFileDialog(folderPath + "?toBeReplacedAssetPath=" + toBeReplacedAssetPath);
+                if(toBeReplacedAssetPath.length > 1){
+                    showAlert("Select one asset...", "Error");
+                    return;
+                }
 
-            $replaceAEMFile.click(function(){
+                replaceDialog = getReplaceAEMFileDialog(folderPath + "?toBeReplacedAssetPath=" + toBeReplacedAssetPath[0]);
+
                 replaceDialog.show();
             });
         }
@@ -273,12 +332,30 @@
         }
     }
 
+    function getToBeReplacedPaths(){
+        var toBeReplacedAssetPaths = [];
+
+        $(".foundation-selections-item").each(function(index, asset){
+            toBeReplacedAssetPaths.push($(asset).data("foundation-collection-item-id"));
+        });
+
+        return toBeReplacedAssetPaths;
+    }
+
     function getStringAfterLastSlash(str){
-        if(!str || (str.indexOf("/") == -1)){
+        if(!str){
             return "";
         }
 
-        return str.substr(str.lastIndexOf("/") + 1);
+        var find = "";
+
+        if(str.indexOf("/") !== -1){
+            find = "/";
+        }else if(str.indexOf("\\") !== -1){
+            find = "\\";
+        }
+
+        return str.substr(str.lastIndexOf(find) + 1);
     }
 
     function getStringAfterLastDot(str){

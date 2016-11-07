@@ -8,6 +8,4 @@
     autoStart="{Boolean}false"
     chunkuploadsupported="{Boolean}true"
     multiple="{Boolean}false"
-    name="file"
-    text="Replace with Local File"
-    uploadUrl="${requestPathInfo.suffix}.createasset.html"/>
+    name="file"/>

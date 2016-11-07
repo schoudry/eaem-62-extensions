@@ -13,6 +13,7 @@ import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.jcr.Session;
 import javax.servlet.ServletException;
 import java.io.InputStream;
 
@@ -32,12 +33,13 @@ public class ReplaceBinary extends SlingAllMethodsServlet {
 
         String toBeReplacedAssetPath = request.getParameter("toBeReplacedAssetPath");
         String replaceWithAssetPath = request.getParameter("replaceWithAssetPath");
+        String deleteSource = request.getParameter("deleteSource");
 
-        replaceBinary(resourceResolver, toBeReplacedAssetPath, replaceWithAssetPath);
+        replaceBinary(resourceResolver, toBeReplacedAssetPath, replaceWithAssetPath, deleteSource);
     }
 
     private void replaceBinary(ResourceResolver resourceResolver, String toBeReplacedAssetPath,
-                               String replaceWithAssetPath) {
+                               String replaceWithAssetPath, String deleteSource) {
         Resource toBeReplacedResource = resourceResolver.getResource(toBeReplacedAssetPath);
         Resource replacingResource = resourceResolver.getResource(replaceWithAssetPath);
 
@@ -50,5 +52,18 @@ public class ReplaceBinary extends SlingAllMethodsServlet {
         InputStream stream = original.adaptTo(InputStream.class);
 
         toBeReplacedAsset.addRendition("original", stream, mimeType);
+
+        if(!"true".equals(deleteSource)){
+            return;
+        }
+
+        try{
+            Session session = resourceResolver.adaptTo(Session.class);
+            session.removeItem(replacingResource.getPath());
+
+            session.save();
+        }catch(Exception e){
+            log.warn("Error removing asset - " + replacingResource.getPath());
+        }
     }
 }

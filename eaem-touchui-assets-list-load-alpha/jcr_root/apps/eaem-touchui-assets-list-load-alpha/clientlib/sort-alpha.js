@@ -31,5 +31,4 @@
 
         $colSpan.closest("th").click();
     }
-
 })(jQuery, $(document));

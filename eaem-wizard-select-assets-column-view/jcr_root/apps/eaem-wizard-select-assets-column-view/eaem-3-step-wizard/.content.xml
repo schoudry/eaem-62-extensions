@@ -51,7 +51,7 @@
                             <items jcr:primaryType="nt:unstructured">
                                 <step1
                                     jcr:primaryType="nt:unstructured"
-                                    jcr:title="Step One"
+                                    jcr:title="Select Folder"
                                     sling:resourceType="granite/ui/components/coral/foundation/container">
                                     <items jcr:primaryType="nt:unstructured">
                                         <title
@@ -92,7 +92,7 @@
                                 </step1>
                                 <step2
                                     jcr:primaryType="nt:unstructured"
-                                    jcr:title="Step Two"
+                                    jcr:title="Column View"
                                     sling:resourceType="granite/ui/components/coral/foundation/container">
                                     <items jcr:primaryType="nt:unstructured">
                                         <column
@@ -115,7 +115,7 @@
                                 </step2>
                                 <step3
                                     jcr:primaryType="nt:unstructured"
-                                    jcr:title="Step Three"
+                                    jcr:title="Additional Info"
                                     sling:resourceType="granite/ui/components/coral/foundation/container">
                                     <items jcr:primaryType="nt:unstructured">
                                         <footer

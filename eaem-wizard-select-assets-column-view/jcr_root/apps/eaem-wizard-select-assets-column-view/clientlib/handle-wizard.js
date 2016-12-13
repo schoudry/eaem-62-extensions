@@ -143,6 +143,8 @@
             return;
         }
 
+        enableWizardNext();
+
         var itemHtml = "", index = 0,
             rowsInTable = getNoOfRowsInEachTable(selectedAssets),
             $tablesDiv = getTablesDiv();

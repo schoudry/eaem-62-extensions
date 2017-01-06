@@ -48,7 +48,7 @@
     }
 
     function getZoomDialog(){
-        return new Coral.Dialog().set({
+        var dialog = new Coral.Dialog().set({
             closable: "on",
             header: {
                 innerHTML: 'Zoom'
@@ -57,10 +57,20 @@
                 innerHTML: getZoomDialogContent()
             }
         });
+
+        var uiAdjust = { "left" : "0%", "margin-left" : "0px", "max-width" : "100%" };
+
+        dialog.$.find(".coral-Dialog-wrapper").css(uiAdjust);
+
+        return dialog;
     }
 
     function getZoomDialogContent(){
-        return "<iframe width='1300px' height='800px' frameBorder='0'></iframe>";
+        var vpWidth = $(window).width() - 30,
+            vpHeight = $(window).height() - 110;
+
+        return "<iframe webkitallowfullscreen mozallowfullscreen allowfullscreen width='"
+            + vpWidth + "px' height='" + vpHeight + "px' scrolling='no' frameBorder='0'></iframe>";
     }
 
     function getZoomAction(dialog){

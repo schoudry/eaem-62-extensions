@@ -112,6 +112,16 @@
             }
         }(gAuthor.edit.ToolbarActions.INSERT.handler);
 
+        gAuthor.edit.ToolbarActions.DELETE.handler = function eaemDeleteConfirm(executeDlgFn){
+            return function (editable, historyConfig) {
+                if(!isAllowed(editable, "Delete")){
+                    return;
+                }
+
+                return executeDlgFn.call(this, editable, historyConfig);
+            }
+        }(gAuthor.edit.ToolbarActions.DELETE.handler);
+
         function isAllowed(editable, action){
             if(_.isEmpty(userGroups)){
                 userGroups = getUserGroups();

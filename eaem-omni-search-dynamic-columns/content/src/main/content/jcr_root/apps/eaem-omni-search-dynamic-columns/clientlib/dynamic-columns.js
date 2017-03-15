@@ -1,7 +1,7 @@
 (function ($, $document) {
     var FOUNDATION_CONTENT_LOADED = "foundation-contentloaded",
         ROW_SELECTOR = "tr.foundation-collection-item",
-        GRANITE_OMNI_SEARCH_RESULT = "granite-omnisearch-result",
+        GRANITE_OMNI_SEARCH_RESULT = "#granite-omnisearch-result",
         COLUMN_LIST = "/etc/experience-aem/omni-search-columns/_jcr_content.list.json",
         COLUMN_CONFIG = {},
         METADATA_MAPPING = "data-metadata-mapping",
@@ -17,13 +17,9 @@
     });
 
     function handleContentLoad(event){
-        if (event.target.id !== GRANITE_OMNI_SEARCH_RESULT) {
-            return;
-        }
+        var layout = $(GRANITE_OMNI_SEARCH_RESULT).data("foundationLayout");
 
-        var layout = $(event.target).data("foundationLayout");
-
-        if(layout.layoutId !== "list"){
+        if(!layout || (layout.layoutId !== "list")){
             return;
         }
 

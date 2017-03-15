@@ -1,13 +1,11 @@
 (function ($, $document) {
-    var FOUNDATION_CONTENT_PERFORM = "foundation-layout-perform",
-        FOUNDATION_CONTENT_LOADED = "foundation-contentloaded",
-        FOUNDATION_MODE_CHANGE = "foundation-mode-change",
-        OMNI_SEARCH_FORM = ".granite-omnisearch-form",
+    var FOUNDATION_CONTENT_LOADED = "foundation-contentloaded",
+        ROW_SELECTOR = "tr.foundation-collection-item",
         GRANITE_OMNI_SEARCH_RESULT = "granite-omnisearch-result",
         COLUMN_LIST = "/etc/experience-aem/omni-search-columns/_jcr_content.list.json",
         COLUMN_CONFIG = {},
         METADATA_MAPPING = "data-metadata-mapping",
-        METADATA_COLNAME = "data-metadata-colname",
+        RESULTS_URL = "/bin/eaem/metadataResults.json",
         GRANITE_OMNI_SEARCH_CONTENT = ".granite-omnisearch-content";
 
     loadColumnsConfiguration();
@@ -34,15 +32,26 @@
         fillColumnData();
     }
 
-    function fillColumnData($listView, enabledColumns){
-        var $container = $(GRANITE_OMNI_SEARCH_CONTENT);
+    function fillColumnData(){
+        var $fui = $(window).adaptTo("foundation-ui");
 
-        collectionIterate({});
+        $fui.wait();
+
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: RESULTS_URL,
+            data: {
+                paths: getPaths().join(",")
+            }
+        }).done(collectionIterate);
 
         function collectionIterate(data){
-            $("tr.foundation-collection-item").each(function(index, item){
+            $(ROW_SELECTOR).each(function(index, item){
                 itemHandler(data, $(item) );
             });
+
+            $fui.clearWait();
         }
 
         function itemHandler(data, $row){
@@ -53,9 +62,26 @@
             var itemPath = $row.data("foundation-collection-item-id"), metaValue;
 
             _.each(COLUMN_CONFIG, function(colName, colMetaPath){
-                $row.append(getListCellHtml(colMetaPath, "Test"));
+                metaValue = data[itemPath][colMetaPath] || "";
+                $row.append(getListCellHtml(colMetaPath, metaValue));
             });
         }
+    }
+
+    function getPaths(){
+        var paths = [], $item;
+
+        $(ROW_SELECTOR).each(function(index, item){
+            $item = $(item);
+
+            if(!_.isEmpty($item.find("td[" + METADATA_MAPPING + "]"))){
+                return;
+            }
+
+            paths.push($item.data("foundation-collection-item-id"));
+        });
+
+        return paths;
     }
 
     function addColumnHeaders(){
@@ -63,7 +89,7 @@
             return;
         }
 
-        var headerHtml, $fui = $(window).adaptTo("foundation-ui"),
+        var headerHtml,
             $container = $(GRANITE_OMNI_SEARCH_CONTENT),
             $headRow = $container.find("thead > tr");
 
@@ -102,12 +128,4 @@
             })
         });
     }
-
-
-    $document.on(FOUNDATION_CONTENT_PERFORM, function(event) {
-    });
-
-    $document.on(FOUNDATION_MODE_CHANGE, function(e, mode){
-    });
-
 })(jQuery, jQuery(document));

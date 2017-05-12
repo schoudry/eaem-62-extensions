@@ -122,7 +122,9 @@
             $selectBut = $dialog.find(".coral-Button--primary");
 
         $dialog.find(".cq-dialog-header").hide();
-        $selectBut.css("margin", "100px 0 0 380px").click(sendDataMessage);
+        $dialog.find(".cq-dialog-content").css("top", ".1rem");
+
+        $selectBut.css("margin", "120px 0 0 380px").click(sendDataMessage);
     }
 
     function sendDataMessage(){
